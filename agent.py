@@ -18,12 +18,11 @@ class AgentAsk:
 
 
 class Agent(ABC):
-    def __init__(self, num_credits: int, budget: int, util: Callable[[float], float], demand_inv: Callable[[float], float], discount: float) -> None:
+    def __init__(self, num_credits: int, budget: int, util: Callable[[float], float], demand_inv: Callable[[float], float]) -> None:
         self.num_credits = num_credits
         self.budget = budget
         self.util = util
         self.demand_inv = demand_inv
-        self.discount = discount  # indicator of how much less we value profit in the next round
 
     @abstractmethod
     def bid(self, market_data: MarketData) -> List[AgentBid]:

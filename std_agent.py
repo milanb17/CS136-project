@@ -4,15 +4,19 @@ from consumption_data import ConsumptionData
 import math
 import random
 
+DISCOUNT = 0.9
+
 
 class StdAgent(Agent):
 
     def consumption_w_credits(self, market_data: MarketData, num_credits: int) -> ConsumptionData:
         carbon_free_q: float = self.demand_inv(market_data.carbon_p)
-        if carbon_free_q < num_credits:
+        credited_carbon = market_data.credit_value(
+            market_data.round) * num_credits
+        if carbon_free_q < credited_carbon:
             return ConsumptionData(carbon_free_q, 0)
         else:
-            return ConsumptionData(num_credits, max(self.demand_inv(market_data.renew_p) - num_credits, 0))
+            return ConsumptionData(credited_carbon, max(self.demand_inv(market_data.renew_p) - credited_carbon, 0))
 
     def consumption(self, market_data: MarketData) -> ConsumptionData:
         return self.consumption_w_credits(self, market_data, self.num_credits)
@@ -28,7 +32,7 @@ class StdAgent(Agent):
     def price_for(self, market_data: MarketData, q_buy: int):
         curr_util = self.total_utility(market_data, self.num_credits)
         on_buy_util = self.total_utility(market_data, self.num_credits + q_buy)
-        return (on_buy_util - curr_util) * 1/(1 - self.discount)
+        return (on_buy_util - curr_util) / (1 - DISCOUNT)
 
     def bid(self, market_data: MarketData) -> List[AgentBid]:
         q_buy = 1
@@ -48,4 +52,4 @@ class StdAgent(Agent):
         def demand_inv(cost: float):
             return alpha * alpha / (4 * cost * cost)
 
-        return StdAgent(5 * math.floor(alpha), 100000, util, demand_inv, 0.9)
+        return StdAgent(12, 100000, util, demand_inv)
