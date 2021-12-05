@@ -52,4 +52,4 @@ class StdAgent(Agent):
         def demand_inv(cost: float):
             return alpha * alpha / (4 * cost * cost)
 
-        return StdAgent(12, 100000, util, demand_inv)
+        return StdAgent(12, 0, util, demand_inv)
