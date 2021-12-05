@@ -56,14 +56,14 @@ class CallMarket:
         return t
 
     def run(self) -> None:
-        for agent in self.agents:
+        for i, agent in enumerate(self.agents):
             bids = [BookBid(b.quantity, b.price, i, self.time)
-                    for i, b in enumerate(agent.bid())]
+                    for b in agent.bid()]
             for bid in bids:
                 heapq.heappush(self.bids, bid)
 
             asks = [BookAsk(b.quantity, b.price, i, self.time)
-                    for i, b in enumerate(agent.ask())]
+                    for b in agent.ask()]
             for ask in asks:
                 heapq.heappush(self.asks, ask)
 
@@ -106,14 +106,16 @@ class CDAMarket:
         return t
 
     def run(self) -> None:
-        for agent in self.agents:
+        # I mostly copied this from the call market, so it is batched right now
+        # Could be modified to run after each bid/ask instead
+        for i, agent in enumerate(self.agents):
             bids = [BookBid(b.quantity, b.price, i, self.time)
-                    for i, b in enumerate(agent.bid())]
+                    for b in agent.bid()]
             for bid in bids:
                 heapq.heappush(self.bids, bid)
 
             asks = [BookAsk(b.quantity, b.price, i, self.time)
-                    for i, b in enumerate(agent.ask())]
+                    for b in agent.ask()]
             for ask in asks:
                 heapq.heappush(self.asks, ask)
 
@@ -132,7 +134,7 @@ class CDAMarket:
                 top_ask.quantity -= traded_quantity
                 heapq.heappop(self.bids)
 
-            price = top_bid.price if top_bid.time < top_ask.time else top_ask.time
+            price = top_bid.price if top_bid.time < top_ask.time else top_ask.price
             trades.append(CDATrade(top_ask.agent_id,
                                    top_bid.agent_id, traded_quantity, price))
 
