@@ -32,7 +32,13 @@ class StdAgent(Agent):
     def price_for(self, market_data: MarketData, q_buy: int):
         curr_util = self.total_utility(market_data, self.num_credits)
         on_buy_util = self.total_utility(market_data, self.num_credits + q_buy)
-        return (on_buy_util - curr_util) / (1 - DISCOUNT)
+        val = (on_buy_util - curr_util) / (1 - DISCOUNT)
+        val = round(val * 1000) / 1000
+        if(val * q_buy < 0):
+            print(curr_util)
+            print(on_buy_util)
+            assert(False)
+        return val
 
     def bid(self, market_data: MarketData) -> List[AgentBid]:
         q_buy = 1

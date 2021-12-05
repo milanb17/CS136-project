@@ -6,6 +6,7 @@ from bid import BookBid, BookAsk
 from consumption_data import ConsumptionData
 from market import Market
 from market_data import MarketData
+from history import History, RoundInfo
 
 
 class Simulator:
@@ -23,8 +24,8 @@ class Simulator:
         self.ren_price = ren_price
         self.market = market
 
-    def run(self, num_rounds: int) -> List[List[ConsumptionData]]:
-        consumption_data: List[List[ConsumptionData]] = []
+    def run(self, num_rounds: int) -> History:
+        history: History = History([])
         total_renewables = 0
 
         for r in range(num_rounds):
@@ -33,6 +34,10 @@ class Simulator:
 
             market_data = MarketData(self.carbon_price(
                 r), self.ren_price(r, total_renewables), self.credit_value, r)
+
+            if market_data.carbon_p >= market_data.renew_p:
+                break
+
             for i, agent in enumerate(self.agents):
                 agent_bids = [BookBid(b.quantity, b.price, i, r)
                               for b in agent.bid(market_data)]
@@ -47,13 +52,22 @@ class Simulator:
                 self.agents[trade.buyer_id].buy(trade.price, trade.quantity)
                 self.agents[trade.seller_id].sell(trade.price, trade.quantity)
 
+            ren_price = self.ren_price(r, total_renewables)
+
+            util = 0
             round_consumption_data = []
             for agent in self.agents:
-                agent_consumption = agent.consumption(market_data)
-                total_renewables += agent_consumption.renewables
+                agent_csm = agent.consumption(market_data)
+                total_renewables += agent_csm.renewables
+                util += agent.util(agent_csm.renewables + agent_csm.carbon)
+                util -= agent_csm.renewables * market_data.renew_p + \
+                    agent_csm.carbon * market_data.carbon_p
 
-                round_consumption_data.append(agent_consumption)
+                round_consumption_data.append(agent_csm)
 
-            consumption_data.append(round_consumption_data)
+            round_info = RoundInfo(
+                round_consumption_data, ren_price, trades, util)
 
-        return consumption_data
+            history.rounds.append(round_info)
+
+        return history
