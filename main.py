@@ -10,7 +10,7 @@ def zero(_x):
 
 
 def main():
-    agents = [StdAgent(0, 0, zero, zero) for _ in range(10)]
+    agents = [StdAgent(0, 0, zero, zero, 0.0) for _ in range(10)]
     call_market = CallMarket()
     simulator = Simulator(agents, zero, zero, zero, call_market)
 

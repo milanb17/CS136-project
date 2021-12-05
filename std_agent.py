@@ -32,11 +32,11 @@ class StdAgent(Agent):
 
     def bid(self, market_data: MarketData) -> List[AgentBid]:
         q_buy = 1
-        return AgentBid(q_buy, self.price_for(market_data, q_buy))
+        return [AgentBid(q_buy, self.price_for(market_data, q_buy))]
 
     def ask(self, market_data: MarketData) -> List[AgentBid]:
         q_sell = 1
-        return AgentAsk(q_sell, -1 * self.price_for(market_data, -1 * q_sell))
+        return [AgentAsk(q_sell, -1 * self.price_for(market_data, -1 * q_sell))]
 
     @classmethod
     def random_agent(cls):

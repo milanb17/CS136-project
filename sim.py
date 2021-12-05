@@ -2,44 +2,10 @@ from dataclasses import dataclass
 from typing import Callable, List
 
 from agent import Agent
+from bid import BookBid, BookAsk
 from consumption_data import ConsumptionData
 from market import Market
 from market_data import MarketData
-
-
-@dataclass
-class BookBid:
-    quantity: int
-    price: float
-    agent_id: int
-    time: int
-
-    def __lt__(self, other: 'BookBid') -> bool:
-        return (self.price, -self.time) > (other.price, -other.time)
-
-
-@dataclass
-class BookAsk:
-    quantity: int
-    price: float
-    agent_id: int
-    time: int
-
-    def __lt__(self, other: 'BookAsk') -> bool:
-        return (self.price, self.time) < (other.price, other.time)
-
-
-@dataclass
-class Trade:
-    seller_id: int
-    buyer_id: int
-    quantity: int
-    price: float
-
-
-@dataclass
-class History:
-    consumption_per_agent_per_round: List[List[ConsumptionData]]
 
 
 class Simulator:
@@ -59,13 +25,14 @@ class Simulator:
 
     def run(self, num_rounds: int) -> List[List[ConsumptionData]]:
         consumption_data = List[List[ConsumptionData]]
+        total_renewables = 0
 
-        for r in num_rounds:
+        for r in range(num_rounds):
             bids: List[BookBid] = []
             asks: List[BookAsk] = []
 
             market_data = MarketData(self.carbon_price(
-                r), self.ren_price(consumption_data.renewables))
+                r), self.ren_price(total_renewables))
             for i, agent in enumerate(self.agents):
                 agent_bids = [BookBid(b.quantity, b.price, i, r)
                               for b in agent.bid(market_data)]
@@ -75,12 +42,18 @@ class Simulator:
                               for b in agent.ask(market_data)]
                 asks.extend(agent_asks)
 
-            trades = self.market.run_round(bids, asks, market_data)
+            trades = self.market.run_round(bids, asks)
             for trade in trades:
                 self.agents[trade.buyer_id].buy(trade.price, trade.quantity)
                 self.agents[trade.seller_id].sell(trade.price, trade.quantity)
 
-            consumption_data.append(
-                [agent.consumption(market_data) for agent in self.agents])
+            round_consumption_data = []
+            for agent in self.agents:
+                agent_consumption = agent.consumption(market_data)
+                total_renewables += agent_consumption.renewables
+
+                round_consumption_data.append(agent_consumption)
+
+            consumption_data.append(round_consumption_data)
 
         return consumption_data
