@@ -55,7 +55,7 @@ class CallMarket:
         self._time += 1
         return t
 
-    def run(self):
+    def run(self) -> None:
         for agent in self.agents:
             bids = [BookBid(b.quantity, b.price, i, self.time)
                     for i, b in enumerate(agent.bid())]
@@ -105,12 +105,12 @@ class CDAMarket:
         self._time: int = 0
 
     @property
-    def time(self):
+    def time(self) -> int:
         t = self._time
         self._time += 1
         return t
 
-    def run(self):
+    def run(self) -> None:
         for agent in self.agents:
             bids = [BookBid(b.quantity, b.price, i, self.time)
                     for i, b in enumerate(agent.bid())]
