@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Callable, List
 from dataclasses import dataclass
+from market_data import MarketData
 
 
 @dataclass
@@ -16,17 +17,17 @@ class AgentAsk:
 
 
 class Agent(ABC):
-    def __init__(self, num_credits: int, budget: int, demand: Callable[[float], float]) -> None:
+    def __init__(self, num_credits: int, budget: int, utility: Callable[[float], float]) -> None:
         self.num_credits = num_credits
         self.budget = budget
-        self.demand = demand
+        self.utility = utility
 
     @abstractmethod
-    def bid(self) -> List[AgentBid]:
+    def bid(self, carbon_price, renewable_price) -> List[AgentBid]:
         pass
 
     @abstractmethod
-    def ask(self) -> List[AgentAsk]:
+    def ask(self, carbon_price, renewable_price) -> List[AgentAsk]:
         pass
 
     def buy(self, price: float, quantity: int) -> None:
