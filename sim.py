@@ -14,7 +14,7 @@ class Simulator:
         agents: List[Agent],
         credit_value: Callable[[int], float],
         carbon_price: Callable[[int], float],
-        ren_price: Callable[[int], float],
+        ren_price: Callable[[int, int], float],
         market: Market
     ) -> None:
         self.agents = agents
@@ -24,7 +24,7 @@ class Simulator:
         self.market = market
 
     def run(self, num_rounds: int) -> List[List[ConsumptionData]]:
-        consumption_data = List[List[ConsumptionData]]
+        consumption_data: List[List[ConsumptionData]] = []
         total_renewables = 0
 
         for r in range(num_rounds):
@@ -32,7 +32,7 @@ class Simulator:
             asks: List[BookAsk] = []
 
             market_data = MarketData(self.carbon_price(
-                r), self.ren_price(total_renewables))
+                r), self.ren_price(r, total_renewables), self.credit_value, r)
             for i, agent in enumerate(self.agents):
                 agent_bids = [BookBid(b.quantity, b.price, i, r)
                               for b in agent.bid(market_data)]

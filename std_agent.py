@@ -19,7 +19,7 @@ class StdAgent(Agent):
             return ConsumptionData(credited_carbon, max(self.demand_inv(market_data.renew_p) - credited_carbon, 0))
 
     def consumption(self, market_data: MarketData) -> ConsumptionData:
-        return self.consumption_w_credits(self, market_data, self.num_credits)
+        return self.consumption_w_credits(market_data, self.num_credits)
 
     def total_utility(self, market_data: MarketData, num_credits: int):
         consumption: ConsumptionData = self.consumption_w_credits(
