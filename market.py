@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from sim import BookAsk, BookBid, Trade
+from bid import BookAsk, BookBid, Trade
 
 
 class Market(ABC):

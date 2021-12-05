@@ -2,7 +2,7 @@ import heapq
 from typing import List
 
 from market import Market
-from sim import BookAsk, BookBid, Trade
+from bid import BookAsk, BookBid, Trade
 
 
 class CDA(Market):
