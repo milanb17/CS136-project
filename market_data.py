@@ -3,5 +3,5 @@ from dataclasses import dataclass
 
 @dataclass
 class MarketData:
-    carbon_price: float
-    renewable_price: float
+    carbon_p: float
+    renew_p: float

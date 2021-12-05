@@ -17,17 +17,18 @@ class AgentAsk:
 
 
 class Agent(ABC):
-    def __init__(self, num_credits: int, budget: int, utility: Callable[[float], float]) -> None:
+    def __init__(self, num_credits: int, budget: int, utility: Callable[[float], float], utility_inv: Callable[[float], float]) -> None:
         self.num_credits = num_credits
         self.budget = budget
         self.utility = utility
+        self.utility_inv = utility_inv
 
     @abstractmethod
-    def bid(self, carbon_price, renewable_price) -> List[AgentBid]:
+    def bid(self, market_data: MarketData) -> List[AgentBid]:
         pass
 
     @abstractmethod
-    def ask(self, carbon_price, renewable_price) -> List[AgentAsk]:
+    def ask(self, market_data: MarketData) -> List[AgentAsk]:
         pass
 
     def buy(self, price: float, quantity: int) -> None:
