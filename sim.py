@@ -1,8 +1,10 @@
-import heapq
 from dataclasses import dataclass
-from typing import List
+from typing import Callable, List
 
 from agent import Agent
+from consumption_data import ConsumptionData
+from market import Market
+from market_data import MarketData
 
 
 @dataclass
@@ -28,116 +30,57 @@ class BookAsk:
 
 
 @dataclass
-class CallTrade:
-    seller_id: int
-    buyer_id: int
-    quantity: int
-
-
-@dataclass
-class CDATrade:
+class Trade:
     seller_id: int
     buyer_id: int
     quantity: int
     price: float
 
 
-class CallMarket:
-    def __init__(self, agents: List[Agent]) -> None:
+@dataclass
+class History:
+    consumption_per_agent_per_round: List[List[ConsumptionData]]
+
+
+class Simulator:
+    def __init__(
+        self,
+        agents: List[Agent],
+        credit_value: Callable[[int], float],
+        carbon_price: Callable[[int], float],
+        ren_price: Callable[[int], float],
+        market: Market
+    ) -> None:
         self.agents = agents
-        self.bids: List[BookBid] = []
-        self.asks: List[BookAsk] = []
-        self._time: int = 0
+        self.credit_value = credit_value
+        self.carbon_price = carbon_price
+        self.ren_price = ren_price
+        self.market = market
 
-    @property
-    def time(self) -> int:
-        t = self._time
-        self._time += 1
-        return t
+    def run(self, num_rounds: int) -> List[List[ConsumptionData]]:
+        consumption_data = List[List[ConsumptionData]]
 
-    def run(self) -> None:
-        for i, agent in enumerate(self.agents):
-            bids = [BookBid(b.quantity, b.price, i, self.time)
-                    for b in agent.bid()]
-            for bid in bids:
-                heapq.heappush(self.bids, bid)
+        for r in num_rounds:
+            bids: List[BookBid] = []
+            asks: List[BookAsk] = []
 
-            asks = [BookAsk(b.quantity, b.price, i, self.time)
-                    for b in agent.ask()]
-            for ask in asks:
-                heapq.heappush(self.asks, ask)
+            market_data = MarketData(self.carbon_price(
+                r), self.ren_price(consumption_data.renewables))
+            for i, agent in enumerate(self.agents):
+                agent_bids = [BookBid(b.quantity, b.price, i, r)
+                              for b in agent.bid(market_data)]
+                bids.extend(agent_bids)
 
-        trades: List[CallTrade] = []
-        midpoint_price = 0.0
-        while len(self.bids) != 0 and len(self.asks) != 0:
-            top_bid = self.bids[0]
-            top_ask = self.asks[0]
-            if top_bid.price < top_ask.price:
-                break
+                agent_asks = [BookAsk(b.quantity, b.price, i, r)
+                              for b in agent.ask(market_data)]
+                asks.extend(agent_asks)
 
-            traded_quantity = min(top_bid.quantity, top_ask.quantity)
-            if top_bid.quantity >= top_ask.quantity:
-                top_bid.quantity -= traded_quantity
-                heapq.heappop(self.asks)
-            if top_ask.quantity >= top_bid.quantity:
-                top_ask.quantity -= traded_quantity
-                heapq.heappop(self.bids)
+            trades = self.market.run_round(bids, asks, market_data)
+            for trade in trades:
+                self.agents[trade.buyer_id].buy(trade.price, trade.quantity)
+                self.agents[trade.seller_id].sell(trade.price, trade.quantity)
 
-            trades.append(CallTrade(top_ask.agent_id,
-                                    top_bid.agent_id, traded_quantity))
-            midpoint_price = (top_bid.price + top_ask.price) / 2
+            consumption_data.append(
+                [agent.consumption(market_data) for agent in self.agents])
 
-        for trade in trades:
-            self.agents[trade.buyer_id].buy(midpoint_price, trade.quantity)
-            self.agents[trade.seller_id].sell(midpoint_price, trade.quantity)
-
-
-class CDAMarket:
-    def __init__(self, agents: List[Agent]) -> None:
-        self.agents = agents
-        self.bids: List[BookBid] = []
-        self.asks: List[BookAsk] = []
-        self._time: int = 0
-
-    @property
-    def time(self) -> int:
-        t = self._time
-        self._time += 1
-        return t
-
-    def run(self) -> None:
-        # I mostly copied this from the call market, so it is batched right now
-        # Could be modified to run after each bid/ask instead
-        for i, agent in enumerate(self.agents):
-            bids = [BookBid(b.quantity, b.price, i, self.time)
-                    for b in agent.bid()]
-            for bid in bids:
-                heapq.heappush(self.bids, bid)
-
-            asks = [BookAsk(b.quantity, b.price, i, self.time)
-                    for b in agent.ask()]
-            for ask in asks:
-                heapq.heappush(self.asks, ask)
-
-        trades: List[CDATrade] = []
-        while len(self.bids) != 0 and len(self.asks) != 0:
-            top_bid = self.bids[0]
-            top_ask = self.asks[0]
-            if top_bid.price < top_ask.price:
-                break
-
-            traded_quantity = min(top_bid.quantity, top_ask.quantity)
-            if top_bid.quantity >= top_ask.quantity:
-                top_bid.quantity -= traded_quantity
-                heapq.heappop(self.asks)
-            if top_ask.quantity >= top_bid.quantity:
-                top_ask.quantity -= traded_quantity
-                heapq.heappop(self.bids)
-
-            price = top_bid.price if top_bid.time < top_ask.time else top_ask.price
-            trades.append(CDATrade(top_ask.agent_id,
-                                   top_bid.agent_id, traded_quantity, price))
-
-        for trade in trades:
-            self.agents[trade.buyer_id].buy(trade.price, trade.quantity)
-            self.agents[trade.seller_id].sell(trade.price, trade.quantity)
+        return consumption_data
