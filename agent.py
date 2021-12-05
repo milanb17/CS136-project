@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Callable, List
 from dataclasses import dataclass
 from market_data import MarketData
+from consumption_data import ConsumptionData
 
 
 @dataclass
@@ -22,6 +23,7 @@ class Agent(ABC):
         self.budget = budget
         self.util = util
         self.demand_inv = demand_inv
+        self.discount = 0.9  # indicator of how much less we value profit in the next round
 
     @abstractmethod
     def bid(self, market_data: MarketData) -> List[AgentBid]:
@@ -29,6 +31,10 @@ class Agent(ABC):
 
     @abstractmethod
     def ask(self, market_data: MarketData) -> List[AgentAsk]:
+        pass
+
+    @abstractmethod
+    def consumption(self, market_data: MarketData) -> ConsumptionData:
         pass
 
     def buy(self, price: float, quantity: int) -> None:
