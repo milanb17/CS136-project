@@ -1,6 +1,6 @@
+import heapq
 from dataclasses import dataclass
 from typing import List
-import heapq
 
 from agent import Agent
 
@@ -75,18 +75,13 @@ class CallMarket:
             if top_bid.price < top_ask.price:
                 break
 
-            heapq.heappop(self.bids)
-            heapq.heappop(self.asks)
-            traded_quantity = abs(top_bid.quantity - top_ask.quantity)
-
-            if top_bid.quantity > top_ask.quantity:
-                new_bid = BookBid(
-                    top_bid.quantity - traded_quantity, top_bid.price, top_bid.agent_id, top_bid.time)
-                heapq.heappush(self.bids, new_bid)
-            if top_ask.quantity > top_bid.quantity:
-                new_ask = BookAsk(
-                    top_ask.quantity - traded_quantity, top_ask.price, top_ask.agent_id, top_ask.time)
-                heapq.heappush(self.asks, new_ask)
+            traded_quantity = min(top_bid.quantity, top_ask.quantity)
+            if top_bid.quantity >= top_ask.quantity:
+                top_bid.quantity -= traded_quantity
+                heapq.heappop(self.asks)
+            if top_ask.quantity >= top_bid.quantity:
+                top_ask.quantity -= traded_quantity
+                heapq.heappop(self.bids)
 
             trades.append(CallTrade(top_ask.agent_id,
                                     top_bid.agent_id, traded_quantity))
@@ -129,18 +124,13 @@ class CDAMarket:
             if top_bid.price < top_ask.price:
                 break
 
-            heapq.heappop(self.bids)
-            heapq.heappop(self.asks)
-            traded_quantity = abs(top_bid.quantity - top_ask.quantity)
-
-            if top_bid.quantity > top_ask.quantity:
-                new_bid = BookBid(
-                    top_bid.quantity - traded_quantity, top_bid.price, top_bid.agent_id, top_bid.time)
-                heapq.heappush(self.bids, new_bid)
-            if top_ask.quantity > top_bid.quantity:
-                new_ask = BookAsk(
-                    top_ask.quantity - traded_quantity, top_ask.price, top_ask.agent_id, top_ask.time)
-                heapq.heappush(self.asks, new_ask)
+            traded_quantity = min(top_bid.quantity, top_ask.quantity)
+            if top_bid.quantity >= top_ask.quantity:
+                top_bid.quantity -= traded_quantity
+                heapq.heappop(self.asks)
+            if top_ask.quantity >= top_bid.quantity:
+                top_ask.quantity -= traded_quantity
+                heapq.heappop(self.bids)
 
             price = top_bid.price if top_bid.time < top_ask.time else top_ask.time
             trades.append(CDATrade(top_ask.agent_id,
