@@ -24,8 +24,15 @@ class StdAgent(Agent):
         quantity: float = market_data.carbon_p + market_data.renew_p
         return self.util(quantity) - cost
 
-    def bid(self, market_data: MarketData) -> List[AgentBid]:
-        q_buy = 1
+    def price_for(self, market_data: MarketData, q_buy: int):
         curr_util = self.total_utility(market_data, self.num_credits)
         on_buy_util = self.total_utility(market_data, self.num_credits + q_buy)
-        return AgentBid(q_buy, (on_buy_util - curr_util) * 1/(1 - self.discount))
+        return (on_buy_util - curr_util) * 1/(1 - self.discount)
+
+    def bid(self, market_data: MarketData) -> List[AgentBid]:
+        q_buy = 1
+        return AgentBid(q_buy, self.price_for(market_data, q_buy))
+
+    def ask(self, market_data: MarketData) -> List[AgentBid]:
+        q_sell = 1
+        return AgentAsk(q_sell, self.price_for(market_data, -1 * q_sell))
