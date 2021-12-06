@@ -3,6 +3,7 @@
 from std_agent import StdAgent
 from sim import Simulator
 from call_market import CallMarket
+from cda import CDA
 import csv
 
 
@@ -38,7 +39,7 @@ def run():
     agents = [StdAgent.random_agent(1.0) for i in range(10)]
     call_market = CallMarket()
     simulator = Simulator(agents, credit_value, carbon_p,
-                          renewable_p, prosecution_c, prosection_normalization, fine_c, call_market)
+                          renewable_p, prosecution_c, prosection_normalization, fine_c, CDA())
 
     max_len = 50
     history = simulator.run(max_len)
@@ -89,15 +90,15 @@ def main():
         innovation_bump_c = i * 0.000003
         result = [innovation_bump_c]
         results.append(result + multi_run(300))
+    print("done")
+    print(results)
+    with open("innovation_bump_truthful.csv", "w+") as my_csv:
+        csvWriter = csv.writer(my_csv, delimiter=',')
+        csvWriter.writerows(results)
     return results
 
 
 if __name__ == "__main__":
-    res = main()
-    print("done")
-    print(res)
-    with open("innovation_bump_truthful.csv", "w+") as my_csv:
-        csvWriter = csv.writer(my_csv, delimiter=',')
-        csvWriter.writerows(res)
+    multi_run(100)
     print("Result: ")
     print(res)
