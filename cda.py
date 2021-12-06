@@ -43,7 +43,10 @@ class CDA(Market):
             top_bid = simulated_bids[0]
             top_ask = simulated_asks[0]
             if top_bid.price < top_ask.price:
-                break
+                if len(bids_and_asks) != 0:
+                    continue
+                else:
+                    break
 
             traded_quantity = min(top_bid.quantity, top_ask.quantity)
             if top_bid.quantity >= top_ask.quantity:
