@@ -14,8 +14,12 @@ def carbon_p(_round):
     return 0.2  # keep constant
 
 
+innovation_c = [0.001]
+innovation_bump_c = [0.000015]
+
+
 def renewable_p(round, total_bought):
-    return 0.35 - round * 0.001 - total_bought * 0.000015
+    return 0.35 - round * innovation_c[0] - total_bought * innovation_bump_c[0]
 
 
 def credit_value(round):
@@ -63,10 +67,11 @@ def multi_run(num_rounds):
 
 def main():
     results = []
-    results.append(["eff%", "total eff%", "total carbon", "num rounds"])
+    results.append(["", "eff%", "total eff%", "total carbon", "num rounds"])
     for i in range(10):
-        discount[0] = i/(1 + i)
-        results.append(multi_run(300))
+        innovation_bump_c[0] = 0.000003 * i
+        result = [innovation_bump_c[0]]
+        results.append(result + multi_run(300))
     return results
 
 
@@ -74,7 +79,7 @@ if __name__ == "__main__":
     res = main()
     print("done")
     print(res)
-    with open("varying_discount.csv", "w+") as my_csv:
+    with open("innovation_bump.csv", "w+") as my_csv:
         csvWriter = csv.writer(my_csv, delimiter=',')
         csvWriter.writerows(res)
     print("Result: ")
