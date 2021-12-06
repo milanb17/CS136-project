@@ -4,8 +4,6 @@ from consumption_data import ConsumptionData
 import math
 import random
 
-discount = [0.9]
-
 
 class StdAgent(Agent):
 
@@ -18,6 +16,9 @@ class StdAgent(Agent):
 
         if credited_carbon == 0:
             return ConsumptionData(0, self.demand_inv(market_data.renew_p))
+
+        if self.truthful:
+            return ConsumptionData(credited_carbon, max(self.demand_inv(market_data.renew_p) - credited_carbon, 0))
 
         # misreport where marginal cost of carbon is equal to that of renewable
 
@@ -82,12 +83,15 @@ class StdAgent(Agent):
         cost: float = market_data.carbon_p * consumption.carbon + \
             market_data.renew_p * consumption.renewables
         quantity: float = consumption.carbon + consumption.renewables
-        return self.util(quantity) - cost - self.fine_cost(market_data, consumption.carbon - num_credits)
+        res = self.util(quantity) - cost - self.fine_cost(market_data,
+                                                          consumption.carbon - num_credits)
+        assert(res >= 0)
+        return res
 
     def price_for(self, market_data: MarketData, q_buy: int):
         curr_util = self.total_utility(market_data, self.num_credits)
         on_buy_util = self.total_utility(market_data, self.num_credits + q_buy)
-        val = (on_buy_util - curr_util) / (1 - discount[0])
+        val = (on_buy_util - curr_util) / (1 - self.discount)
         val = round(val * 1000) / 1000
         if(val * q_buy < 0):
             print(curr_util)
@@ -106,8 +110,15 @@ class StdAgent(Agent):
         q_sell = 1
         return [AgentAsk(q_sell, -1 * self.price_for(market_data, -1 * q_sell))]
 
+    def update_util(self, market_data: MarketData):
+        self.total_util += self.total_utility(market_data, self.num_credits)
+
+    def set_discount(self, discount):
+        self.discount = discount
+        self.total_util = 0
+
     @classmethod
-    def random_agent(cls):
+    def random_agent(cls, truthful_per: float, discount=0.85):
         alpha = random.uniform(1.0, 5.0)
 
         def util(energy: float):
@@ -119,4 +130,7 @@ class StdAgent(Agent):
         def demand_inv(cost: float):
             return alpha * alpha / (4 * cost * cost)
 
-        return StdAgent(12, 0, util, demand, demand_inv, alpha)
+        agent = StdAgent(12, 0, util, demand, demand_inv,
+                         alpha, random.random() < truthful_per)
+        agent.set_discount(discount)
+        return agent

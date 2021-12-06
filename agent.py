@@ -18,13 +18,14 @@ class AgentAsk:
 
 
 class Agent(ABC):
-    def __init__(self, num_credits: int, budget: int, util: Callable[[float], float], demand: Callable[[float], float], demand_inv: Callable[[float], float], alpha: float) -> None:
+    def __init__(self, num_credits: int, budget: int, util: Callable[[float], float], demand: Callable[[float], float], demand_inv: Callable[[float], float], alpha: float, truthful: bool) -> None:
         self.num_credits = num_credits
         self.budget = budget
         self.util = util
         self.demand = demand
         self.demand_inv = demand_inv
         self.alpha = alpha
+        self.truthful = truthful
 
     @abstractmethod
     def bid(self, market_data: MarketData) -> List[AgentBid]:
@@ -36,6 +37,10 @@ class Agent(ABC):
 
     @abstractmethod
     def consumption(self, market_data: MarketData) -> ConsumptionData:
+        pass
+
+    @abstractmethod
+    def update_util(self, market_data: MarketData):
         pass
 
     def buy(self, price: float, quantity: int) -> None:

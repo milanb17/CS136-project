@@ -10,6 +10,7 @@ class RoundInfo:
     renewable_p: float
     trades: List[Trade]
     util: float
+    truthful_util: float
 
 
 @dataclass

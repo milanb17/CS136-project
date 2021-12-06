@@ -65,16 +65,20 @@ class Simulator:
             ren_price = self.ren_price(r, total_renewables)
 
             util = 0
+            truthful_util = 0
             round_consumption_data = []
             total_misreport = 0
             total_reported = 0
             for agent in self.agents:
+                agent.update_util(market_data)
                 agent_csm = agent.consumption(market_data)
                 total_renewables += agent_csm.renewables
-                util += agent.util(agent_csm.renewables + agent_csm.carbon)
+                this_util = agent.util(agent_csm.renewables + agent_csm.carbon)
+                util += this_util
                 util -= agent_csm.renewables * market_data.renew_p + \
                     agent_csm.carbon * market_data.carbon_p
-
+                if agent.truthful:
+                    truthful_util += this_util
                 reported = min(agent_csm.carbon,
                                agent.num_credits * self.credit_value(r))
                 total_misreport += agent_csm.carbon - reported
@@ -85,7 +89,7 @@ class Simulator:
             avg_last_misreport = total_misreport / total_reported
 
             round_info = RoundInfo(
-                round_consumption_data, ren_price, trades, util)
+                round_consumption_data, ren_price, trades, util, truthful_util)
 
             history.rounds.append(round_info)
 
