@@ -8,3 +8,5 @@ class MarketData:
     renew_p: float
     credit_value: Callable[[int], float]
     round: int
+    prosecution_c: float
+    fine_c: float

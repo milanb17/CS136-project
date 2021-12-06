@@ -9,7 +9,7 @@ def zero(_x):
     return 0
 
 
-def carbon_p(round):
+def carbon_p(_round):
     return 0.2  # keep constant
 
 
@@ -18,14 +18,21 @@ def renewable_p(round, total_bought):
 
 
 def credit_value(round):
-    return 1 - 0.01 * round
+    return max(1 - 0.01 * round, 0.5)
+
+
+prosecution_c = 3
+prosection_normalization = 10.0
+# prosecution chances = prosecution_c * misreport% / (prosecution_c * misreport% + 1)
+fine_c = 0.45
+# fine = misreport * fine_c
 
 
 def run():
     agents = [StdAgent.random_agent() for _ in range(10)]
     call_market = CallMarket()
     simulator = Simulator(agents, credit_value, carbon_p,
-                          renewable_p, call_market)
+                          renewable_p, prosecution_c, prosection_normalization, fine_c, call_market)
 
     max_len = 50
     history = simulator.run(max_len)
@@ -46,7 +53,7 @@ def run():
 
 
 def main():
-    num_rounds = 100
+    num_rounds = 1000
     results = [run() for _ in range(num_rounds)]
     total = results[0]
     for result in results[1:]:
