@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import os
 
-csvs = ["innovation_bump.csv", "prosection.csv",
-        "prosecution_normalization.csv", ]
+csvs = ["innovation_bump.csv", "prosecution.csv",
+        "prosecution_normalization.csv"]
 for csv in csvs:
     df = pd.read_csv(os.path.join(os.curdir, csv))
     varying_parameter = df.iloc[:, 0]
