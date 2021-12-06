@@ -35,7 +35,8 @@ truthful_per = 0.0
 
 
 def run():
-    agents = [StdAgent.random_agent(truthful_per) for i in range(10)]
+    agents = [StdAgent.random_agent(
+        1 if i / 10 <= truthful_per else 0) for i in range(10)]
     call_market = CallMarket()
     simulator = Simulator(agents, credit_value, carbon_p,
                           renewable_p, prosecution_c, prosection_normalization, fine_c, call_market)
@@ -88,7 +89,7 @@ def main():
     for i in range(10):
         truthful_per = i / 10
         result = [truthful_per]
-        results.append(result + multi_run(300))
+        results.append(result + multi_run(1000))
     return results
 
 
