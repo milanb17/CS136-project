@@ -1,8 +1,9 @@
 # Do some command line parsing at some point
 
-from std_agent import StdAgent
+from std_agent import StdAgent, discount
 from sim import Simulator
 from call_market import CallMarket
+import csv
 
 
 def zero(_x):
@@ -13,8 +14,12 @@ def carbon_p(_round):
     return 0.2  # keep constant
 
 
+innovation_c = [0.001]
+innovation_bump_c = [0.000015]
+
+
 def renewable_p(round, total_bought):
-    return 0.35 - round * 0.001 - total_bought * 0.000015
+    return 0.35 - round * innovation_c[0] - total_bought * innovation_bump_c[0]
 
 
 def credit_value(round):
@@ -52,8 +57,7 @@ def run():
     return util / max_util, util_per, total_carbon, len(history.rounds)
 
 
-def main():
-    num_rounds = 1000
+def multi_run(num_rounds):
     results = [run() for _ in range(num_rounds)]
     total = results[0]
     for result in results[1:]:
@@ -61,7 +65,23 @@ def main():
     return [a / num_rounds for a in total]
 
 
+def main():
+    global prosection_normalization
+    results = []
+    results.append(["", "eff%", "total eff%", "total carbon", "num rounds"])
+    for i in range(10):
+        prosecution_c = i / 2
+        result = [prosecution_c]
+        results.append(result + multi_run(300))
+    return results
+
+
 if __name__ == "__main__":
     res = main()
+    print("done")
+    print(res)
+    with open("prosection.csv", "w+") as my_csv:
+        csvWriter = csv.writer(my_csv, delimiter=',')
+        csvWriter.writerows(res)
     print("Result: ")
     print(res)
