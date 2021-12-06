@@ -15,11 +15,11 @@ def carbon_p(_round):
 
 
 innovation_c = [0.001]
-innovation_bump_c = [0.000015]
+innovation_bump_c = 0.000015
 
 
 def renewable_p(round, total_bought):
-    return 0.35 - round * innovation_c[0] - total_bought * innovation_bump_c[0]
+    return 0.35 - round * innovation_c[0] - total_bought * innovation_bump_c
 
 
 def credit_value(round):
@@ -35,7 +35,7 @@ truthful_per = 0.0
 
 
 def run():
-    agents = [StdAgent.random_agent(0.0) for i in range(10)]
+    agents = [StdAgent.random_agent(1.0) for i in range(10)]
     call_market = CallMarket()
     simulator = Simulator(agents, credit_value, carbon_p,
                           renewable_p, prosecution_c, prosection_normalization, fine_c, call_market)
@@ -82,12 +82,12 @@ def multi_run(num_rounds):
 
 
 def main():
-    global prosecution_c
+    global innovation_bump_c
     results = []
     results.append(["", "eff%", "total eff%", "total carbon", "num rounds"])
     for i in range(1, 11):
-        prosecution_c = i / 2
-        result = [prosecution_c]
+        innovation_bump_c = i * 0.000003
+        result = [innovation_bump_c]
         results.append(result + multi_run(300))
     return results
 
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     res = main()
     print("done")
     print(res)
-    with open("prosecution.csv", "w+") as my_csv:
+    with open("innovation_bump_truthful.csv", "w+") as my_csv:
         csvWriter = csv.writer(my_csv, delimiter=',')
         csvWriter.writerows(res)
     print("Result: ")
