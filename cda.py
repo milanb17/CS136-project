@@ -1,6 +1,6 @@
 import heapq
 import random
-from typing import List
+from typing import List, Union
 
 from market import Market
 from bid import BookAsk, BookBid, Trade
@@ -17,7 +17,7 @@ class CDA(Market):
         return t
 
     def run_round(self, bids: List[BookBid], asks: List[BookAsk]) -> List[Trade]:
-        bids_and_asks = bids + asks
+        bids_and_asks: List[Union[BookBid, BookAsk]] = bids + asks
         random.shuffle(bids_and_asks)
         for item in bids_and_asks:
             item.time = self.time()
