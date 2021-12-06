@@ -35,8 +35,7 @@ truthful_per = 0.0
 
 
 def run():
-    agents = [StdAgent.random_agent(
-        1 if i / 10 <= truthful_per else 0) for i in range(10)]
+    agents = [StdAgent.random_agent(0.0) for i in range(10)]
     call_market = CallMarket()
     simulator = Simulator(agents, credit_value, carbon_p,
                           renewable_p, prosecution_c, prosection_normalization, fine_c, call_market)
@@ -70,7 +69,7 @@ def run():
     truthful_util_avg = truthful_util / \
         total_truthful if total_truthful > 0 else lying_util / \
         (len(agents) - total_truthful)
-    return util / max_util, util_per, total_carbon, len(history.rounds), truthful_util_avg, lying_util_avg
+    return util / max_util, util_per, total_carbon, len(history.rounds)
     # return [agent.total_util + agent.budget for agent in agents]
 
 
@@ -83,13 +82,13 @@ def multi_run(num_rounds):
 
 
 def main():
-    global truthful_per
+    global prosecution_c
     results = []
     results.append(["", "eff%", "total eff%", "total carbon", "num rounds"])
-    for i in range(10):
-        truthful_per = i / 10
-        result = [truthful_per]
-        results.append(result + multi_run(1000))
+    for i in range(1, 11):
+        prosecution_c = i / 2
+        result = [prosecution_c]
+        results.append(result + multi_run(300))
     return results
 
 
@@ -97,7 +96,7 @@ if __name__ == "__main__":
     res = main()
     print("done")
     print(res)
-    with open("total_truthful.csv", "w+") as my_csv:
+    with open("prosecution.csv", "w+") as my_csv:
         csvWriter = csv.writer(my_csv, delimiter=',')
         csvWriter.writerows(res)
     print("Result: ")
