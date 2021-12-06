@@ -7,22 +7,38 @@ from bid import BookAsk, BookBid, Trade
 
 
 class CDA(Market):
+    def __init__(self) -> None:
+        super().__init__()
+        self._time = 0
+
+    def time(self):
+        t = self._time
+        self._time += 1
+        return t
+
     def run_round(self, bids: List[BookBid], asks: List[BookAsk]) -> List[Trade]:
-        random.shuffle(bids)
-        random.shuffle(asks)
+        bids_and_asks = bids + asks
+        random.shuffle(bids_and_asks)
+        for item in bids_and_asks:
+            item.time = self.time()
 
         trades: List[Trade] = []
         simulated_bids: List[BookBid] = []
         simulated_asks: List[BookAsk] = []
 
         while True:
-            if len(bids) != 0:
-                heapq.heappush(simulated_bids, bids.pop())
-            if len(asks) != 0:
-                heapq.heappush(simulated_asks, asks.pop())
+            if len(bids_and_asks) != 0:
+                item = bids_and_asks.pop()
+                if isinstance(item, BookBid):
+                    heapq.heappush(simulated_bids, item)
+                elif isinstance(item, BookAsk):
+                    heapq.heappush(simulated_asks, item)
 
             if len(simulated_bids) == 0 or len(simulated_asks) == 0:
-                break
+                if len(bids_and_asks) != 0:
+                    continue
+                else:
+                    break
 
             top_bid = simulated_bids[0]
             top_ask = simulated_asks[0]
