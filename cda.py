@@ -21,6 +21,9 @@ class CDA(Market):
             if len(asks) != 0:
                 heapq.heappush(simulated_asks, asks.pop())
 
+            if len(simulated_bids) == 0 or len(simulated_asks) == 0:
+                break
+
             top_bid = simulated_bids[0]
             top_ask = simulated_asks[0]
             if top_bid.price < top_ask.price:
