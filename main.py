@@ -70,8 +70,8 @@ def main():
     results = []
     results.append(["", "eff%", "total eff%", "total carbon", "num rounds"])
     for i in range(10):
-        prosection_normalization = 2 * i
-        result = [prosection_normalization]
+        prosecution_c = i / 2
+        result = [prosecution_c]
         results.append(result + multi_run(300))
     return results
 
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     res = main()
     print("done")
     print(res)
-    with open("prosecution_normalization.csv", "w+") as my_csv:
+    with open("prosection.csv", "w+") as my_csv:
         csvWriter = csv.writer(my_csv, delimiter=',')
         csvWriter.writerows(res)
     print("Result: ")
