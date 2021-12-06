@@ -66,11 +66,12 @@ def multi_run(num_rounds):
 
 
 def main():
+    global prosection_normalization
     results = []
     results.append(["", "eff%", "total eff%", "total carbon", "num rounds"])
     for i in range(10):
-        innovation_bump_c[0] = 0.000003 * i
-        result = [innovation_bump_c[0]]
+        prosection_normalization = 2 * i
+        result = [prosection_normalization]
         results.append(result + multi_run(300))
     return results
 
@@ -79,7 +80,7 @@ if __name__ == "__main__":
     res = main()
     print("done")
     print(res)
-    with open("innovation_bump.csv", "w+") as my_csv:
+    with open("prosecution_normalization.csv", "w+") as my_csv:
         csvWriter = csv.writer(my_csv, delimiter=',')
         csvWriter.writerows(res)
     print("Result: ")
